@@ -1,62 +1,3 @@
-// import { useState } from 'react';
-// import { Cardapio } from './components/Cardapio';
-// import { Carrinho } from './components/Carrinho';
-// import { Pagamento } from './components/Pagamento';
-// import './App.css';
-
-// const PRODUTOS_SORVETERIA = [
-//   { id: 1, nome: 'Casquinha de Baunilha', preco: 6.00 },
-//   { id: 2, nome: 'Cascão de Chocolate', preco: 9.50 },
-//   { id: 3, nome: 'Copinho de Sorvete', preco: 12.00 },
-//   { id: 4, nome: 'Sundae de Morango', preco: 14.00 },
-//   { id: 5, nome: 'Açaí na Tigela 500ml', preco: 18.00 },
-// ];
-
-// export default function App() {
-//   const [carrinho, setCarrinho] = useState([]);
-
-//   const handleAdicionarItem = (produto) => {
-//     setCarrinho([...carrinho, produto]);
-//   };
-
-
-//   const handleRemoverItem = (indexParaRemover) => {
-//     setCarrinho(carrinho.filter((_, index) => index !== indexParaRemover));
-//   };
-
-
-//   const handleFinalizarPedido = () => {
-//     setCarrinho([]);
-//   };
-
-  
-//   const valorTotal = carrinho.reduce((acc, item) => acc + item.preco, 0);
-
-//   return (
-//     <div className="container-principal">
-//       <header>
-//         <h1>🍦 Sorveteria Delícia Gelada</h1>
-//       </header>
-
-//       <div className="conteudo-caixa">
-//         <Cardapio produtos={PRODUTOS_SORVETERIA} onAdicionar={handleAdicionarItem} />
-        
-//         <div className="painel-lateral">
-//           <Carrinho 
-//             itens={carrinho} 
-//             onRemover={handleRemoverItem} 
-//             total={valorTotal} 
-//           />
-//           <Pagamento 
-//             total={valorTotal} 
-//             onFinalizarPedido={handleFinalizarPedido} 
-//           />
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
-
 import { useState, useEffect } from 'react';
 import { supabase } from './supabaseClient';
 import { Cardapio } from './components/Cardapio';
@@ -106,41 +47,71 @@ export default function App() {
     setCarrinho(carrinho.filter((_, index) => index !== indexParaRemover));
   };
 
-  // Função para processar o pagamento com a Edge Function do Supabase
-  const handleFinalizarPedido = async (metodoPagamento) => {
-    if (carrinho.length === 0) {
-      alert('Seu carrinho está vazio!');
-      return;
-    }
+  const limparCarrinho = () => {
+    setCarrinho([]);
+  };
 
-    if (metodoPagamento === 'pix') {
+  // Função para gerar o QR Code do PIX
+  const gerarPix = async () => {
+    try {
       setCarregandoPix(true);
+      const valorTotalCalculado = carrinho.reduce((acc, item) => acc + Number(item.preco), 0);
 
-      try {
-        const { data, error } = await supabase.functions.invoke('gerar-pix', {
-          body: {
-            valor: valorTotal,
-            descricao: 'Pedido - Sorveteria Delícia Gelada'
-          }
-        });
+      const res = await fetch('https://zsnxkasagwmjftoqbkvj.supabase.co/functions/v1/gerar-pix', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          valor: valorTotalCalculado,
+          email: 'cliente@email.com',
+          descricao: 'Pedido Sorveteria Delícia Gelada',
+        }),
+      });
 
-        if (error || !data?.qr_code_base64) {
-          throw new Error('Erro ao gerar o PIX');
-        }
+      const data = await res.json();
 
+      if (data.qr_code) {
         setDadosPix({
-          qrCodeImage: `data:image/jpeg;base64,${data.qr_code_base64}`,
-          copiaECola: data.qr_code
+          qrCodeImage: `data:image/png;base64,${data.qr_code_base64}`,
+          copiaECola: data.qr_code,
         });
+      } else {
+        alert('Erro ao gerar o PIX. Tente novamente.');
+      }
+    } catch (err) {
+      console.error('Erro na requisição do PIX:', err);
+      alert('Erro de conexão ao gerar o PIX.');
+    } finally {
+      setCarregandoPix(false);
+    }
+  };
+
+  // Processa o pagamento conforme o método selecionado
+  const handleFinalizarPedido = async (metodo) => {
+    if (metodo === 'pix') {
+      gerarPix();
+    } else if (metodo === 'cartao') {
+      try {
+        setCarregandoPix(true);
+        const res = await fetch('https://zsnxkasagwmjftoqbkvj.supabase.co/functions/v1/gerar-cartao', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itens: carrinho, email: 'cliente@email.com' }),
+        });
+        const data = await res.json();
+        if (data.init_point) {
+          window.location.href = data.init_point; // Redireciona para o checkout do cartão
+        } else {
+          alert('Erro ao iniciar pagamento com cartão.');
+        }
       } catch (err) {
-        alert('Erro ao gerar cobrança PIX. Tente novamente.');
-        console.error(err);
+        console.error('Erro no cartão:', err);
+        alert('Erro ao conectar com a gateway de cartão.');
       } finally {
         setCarregandoPix(false);
       }
-    } else {
-      alert('Pedido finalizado com sucesso!');
-      setCarrinho([]);
+    } else if (metodo === 'dinheiro') {
+      alert('Pedido realizado! O pagamento será feito em dinheiro na entrega.');
+      limparCarrinho();
     }
   };
 
@@ -218,7 +189,7 @@ export default function App() {
             <button 
               onClick={() => {
                 setDadosPix(null);
-                setCarrinho([]);
+                limparCarrinho();
               }}
               style={{ padding: '10px 16px', background: '#ccc', color: '#333', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
             >

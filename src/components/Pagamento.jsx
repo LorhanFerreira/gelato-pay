@@ -8,8 +8,16 @@ export function Pagamento({ total, onFinalizarPedido, carregandoPix }) {
       alert('O carrinho está vazio!');
       return;
     }
-    // Passa o método selecionado ('pix', 'cartao', 'dinheiro') para o App.jsx
+    // Repassa o método selecionado ('pix', 'cartao', ou 'dinheiro') para a função no App.jsx
     onFinalizarPedido(metodo); 
+  };
+
+  // Função auxiliar para dinamizar o texto do botão
+  const getTextoBotao = () => {
+    if (carregandoPix) return 'Processando...';
+    if (metodo === 'pix') return `Gerar PIX (R$ ${total.toFixed(2)})`;
+    if (metodo === 'cartao') return `Pagar com Cartão (R$ ${total.toFixed(2)})`;
+    return `Confirmar Pedido em Dinheiro (R$ ${total.toFixed(2)})`;
   };
 
   return (
@@ -53,7 +61,7 @@ export function Pagamento({ total, onFinalizarPedido, carregandoPix }) {
         onClick={handlePagar}
         disabled={carregandoPix}
       >
-        {carregandoPix ? 'Gerando PIX...' : `Finalizar Pagamento (R$ ${total.toFixed(2)})`}
+        {getTextoBotao()}
       </button>
     </div>
   );
