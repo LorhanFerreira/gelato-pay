@@ -11,13 +11,15 @@ serve(async (req) => {
   }
 
   try {
-    const token = Deno.env.get('MP_ACCESS_TOKEN')
-    const { valor, descricao } = await req.json()
+    const mpToken = Deno.env.get('MP_ACCESS_TOKEN') || 'TEST-2875128759111086-081114-704917bbb2c3801f4712068bb5fd6c9a-352427368'
+    
+    // Pegando também o email vindo do seu frontend
+    const { valor, descricao, email } = await req.json()
 
     const response = await fetch('https://api.mercadopago.com/v1/payments', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${mpToken.trim()}`,
         'Content-Type': 'application/json',
         'X-Idempotency-Key': crypto.randomUUID(),
       },
@@ -26,8 +28,9 @@ serve(async (req) => {
         description: descricao || 'Pedido Sorveteria Delicia Gelada',
         payment_method_id: 'pix',
         payer: {
-          email: 'comprador_test_2026@test.com',
-          first_name: 'Comprador',
+          // Usa o e-mail enviado pelo frontend, ou fallback de teste
+          email: email || 'test_user_12345678@testuser.com',
+          first_name: 'Cliente',
           last_name: 'Teste'
         },
       }),
@@ -36,6 +39,7 @@ serve(async (req) => {
     const data = await response.json()
 
     if (!response.ok) {
+      console.error('Resposta do Mercado Pago com Erro:', data)
       return new Response(JSON.stringify({ error_mp: data }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: response.status,
