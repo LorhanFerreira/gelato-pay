@@ -45,8 +45,10 @@ header h1 {
   gap: 10px;
 }
 
-.card-produto h3 {
-  color: #333333;
+.card-produto h3, 
+.card-produto span:first-child {
+  flex: 1;
+  text-align: left;
   margin: 0;
 }
 
@@ -62,6 +64,9 @@ header h1 {
 .preco {
   font-weight: bold;
   color: #ad1457;
+  width: 90px;
+  text-align: right;
+  margin-right: 10px;
 }
 
 .card-produto button {

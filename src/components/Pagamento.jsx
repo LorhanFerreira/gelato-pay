@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export function Pagamento({ total, onFinalizarPedido }) {
+export function Pagamento({ total, onFinalizarPedido, carregandoPix }) {
   const [metodo, setMetodo] = useState('pix');
 
   const handlePagar = () => {
@@ -8,8 +8,8 @@ export function Pagamento({ total, onFinalizarPedido }) {
       alert('O carrinho está vazio!');
       return;
     }
-    alert(`Pedido pago com sucesso via ${metodo.toUpperCase()}! 🎉`);
-    onFinalizarPedido(); 
+    // Passa o método selecionado ('pix', 'cartao', 'dinheiro') para o App.jsx
+    onFinalizarPedido(metodo); 
   };
 
   return (
@@ -48,8 +48,12 @@ export function Pagamento({ total, onFinalizarPedido }) {
         </label>
       </div>
 
-      <button className="btn-pagar" onClick={handlePagar}>
-        Finalizar Pagamento (R$ {total.toFixed(2)})
+      <button 
+        className="btn-pagar" 
+        onClick={handlePagar}
+        disabled={carregandoPix}
+      >
+        {carregandoPix ? 'Gerando PIX...' : `Finalizar Pagamento (R$ ${total.toFixed(2)})`}
       </button>
     </div>
   );
