@@ -1,0 +1,139 @@
+* {
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background-color: #fce4ec;
+  margin: 0;
+  padding: 20px;
+}
+
+header h1 {
+  text-align: center;
+  color: #ad1457;
+}
+
+.conteudo-caixa {
+  display: flex;
+  gap: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.cardapio h2,
+.carrinho h2,
+.pagamento h2 {
+  color: #880e4f;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.cardapio {
+  flex: 1;
+  min-width: 300px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.lista-produtos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-produto h3 {
+  color: #333333;
+  margin: 0;
+}
+
+.card-produto {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #f8bbd0;
+  border-radius: 6px;
+}
+
+.preco {
+  font-weight: bold;
+  color: #ad1457;
+}
+
+.card-produto button {
+  background: #ec407a;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.painel-lateral {
+  flex: 1;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.carrinho, .pagamento {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.carrinho ul {
+  list-style: none;
+  padding: 0;
+}
+
+.carrinho li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.carrinho button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.total {
+  text-align: right;
+  color: #ad1457;
+}
+
+.opcoes label {
+  color: #333333;
+}
+
+.opcoes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.btn-pagar {
+  width: 100%;
+  padding: 12px;
+  background: #4caf50;
+  color: white;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.btn-pagar:hover {
+  background: #43a047;
+}
